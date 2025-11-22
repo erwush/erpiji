@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23f7dc8192957d94a96b8e19a3b9cfa5, type: 3}
-  m_Name: Ireng
+  m_Name: Dummy
   m_EditorClassIdentifier: 
-  health: 120
-  maxHealth: 120
-  defaultHealth: 120
-  def: 80
+  health: 10000
+  maxHealth: 10000
+  defaultHealth: 10000
+  def: 5
   atk: 45
-  atkSpd: 1.5
+  atkSpd: 10000
   spd: 5
   knockback: 10
   atkRange: 1.2

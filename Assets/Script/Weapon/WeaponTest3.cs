@@ -9,6 +9,7 @@ public class WeaponTest3 : WeaponBase
     public Animator anim;
     public float atkanim;
     public float atktimer;
+    private SpriteRenderer sprite;
     public PlayerCombat combat;
     public PlayerAttribute attr;
     public DamageBehaviour dmgBehaviour;
@@ -23,9 +24,10 @@ public class WeaponTest3 : WeaponBase
     //UNIQUE VARIABLE
     public enum ActiveBlessing
     {
-        Lifesteal = 0,
-        CritHit = 1,
-        Burning =2,
+        None = 0,
+        Lifesteal = 1,
+        CritHit = 2,
+        Burn = 3,
     }
 
     public ActiveBlessing bless;
@@ -36,6 +38,7 @@ public class WeaponTest3 : WeaponBase
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         combat = GetComponent<PlayerCombat>();
         attr = GetComponent<PlayerAttribute>();
@@ -79,20 +82,26 @@ public class WeaponTest3 : WeaponBase
             //    atkanim = Random.Range(1, 2);
             //}
 
-            atktimer = cooldown;
+            atktimer = 1 / attr.atkSpd;
 
         }
     }
 
     public override void ApplyDamage()
     {
-        if(bless == ActiveBlessing.Lifesteal)
+        if (bless == ActiveBlessing.None)
+        {
+            Base_ApplyDamage();
+        }
+        else if (bless == ActiveBlessing.Lifesteal)
         {
             Lifesteal_ApplyDamage();
-        } else if (bless == ActiveBlessing.CritHit)
+        }
+        else if (bless == ActiveBlessing.CritHit)
         {
             CritHit_ApplyDamage();
-        } else if (bless == ActiveBlessing.Burning)
+        }
+        else if (bless == ActiveBlessing.Burn)
         {
             Burning_ApplyDamage();
         }
@@ -101,11 +110,11 @@ public class WeaponTest3 : WeaponBase
     public void Update()
     {
 
-        if(atktimer > 0)
+        if (atktimer > 0)
         {
             atktimer -= Time.deltaTime;
         }
-        
+
 
         if (atkanim == 1)
         {
@@ -153,7 +162,52 @@ public class WeaponTest3 : WeaponBase
 
     // Update is called once per frame
 
+    //*BASE
+    public void Base_ApplyDamage()
+    {
+        // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
+        // float demeg = 0;
+        // if (hits.Length > 0)
+        // {
+        //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
+        //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+        //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+        // }
 
+
+
+
+        typeIdx = (int)dmgBehaviour.dmgType;
+        elemIdx = (int)dmgBehaviour.dmgElement;
+
+        Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
+        if (enemies.Length > 0)
+        {
+            foreach (Collider2D enemy in enemies)
+            {
+                EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
+                if (enemyAttr == null) continue;
+
+                float demeg = GameUtils.DamageApplier(
+                    attr.atk,
+                    enemyAttr.def,
+                    attr.dmgType[typeIdx],
+                    enemyAttr.dmgRes[typeIdx],
+                    attr.elemDmg[elemIdx],
+                    enemyAttr.elemRes[elemIdx],
+                    attr.critRate,
+                    attr.critDmg,
+                    typeIdx
+                );
+
+                enemy.GetComponent<EnemyHealth>()?.HealthChange(-demeg);
+
+                Debug.Log("Damage ke " + enemy.name + ": " + demeg);
+            }
+
+
+        }
+    }
 
 
 
@@ -184,19 +238,29 @@ public class WeaponTest3 : WeaponBase
         Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
         if (enemies.Length > 0)
         {
-            enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-            demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-            enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-            StartCoroutine(GetHealth(demeg));
+            foreach (Collider2D enemy in enemies)
+            {
+                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
+                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+                StartCoroutine(GetHealth(demeg));
+            }
+
 
         }
     }
 
     public IEnumerator GetHealth(float demeg)
     {
+
         float amount = (demeg * (Lifesteal_healPercent / 100)) * (attr.regenAmount[0] / 100);
-        yield return new WaitForSeconds(0.1f);
+        Debug.Log("healed: " + amount);
+
         healthScr.HealthChange(amount);
+        sprite.color = Color.green;
+        yield return new WaitForSeconds(0.1f);
+        sprite.color = Color.white;
+
     }
 
 
@@ -236,16 +300,21 @@ public class WeaponTest3 : WeaponBase
             }
             else if (CritHit_atkAmount == 3)
             {
-                if(CritHit_activeCor == null)
+                if (CritHit_activeCor == null)
                 {
                     CritHit_activeCor = StartCoroutine(CritHit_IncreaseCrit());
                 }
             }
-            enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-            demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-            enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-            Debug.Log(demeg);
             CritHit_isHit = true;
+            foreach (Collider2D enemy in enemies)
+            {
+                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
+                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+                Debug.Log(demeg);
+
+            }
+
 
         }
     }
@@ -293,10 +362,22 @@ public class WeaponTest3 : WeaponBase
         Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
         if (enemies.Length > 0)
         {
-            enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-            demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-            enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-            StartCoroutine(GetHealth(demeg));
+            foreach (Collider2D enemy in enemies)
+            {
+                EnemyBurning burn = enemy.GetComponent<EnemyBurning>();
+                if (burn == null)
+                {
+                    burn = enemy.gameObject.AddComponent<EnemyBurning>();
+                    burn.burnDmg = Burning_burnDmg;
+                    burn.burnDelay = Burning_delay;
+                    burn.burnDuration = Burning_burnDuration;
+                    burn.isBurning = true;
+                }
+                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
+                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+            }
+
 
         }
     }

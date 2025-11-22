@@ -304,6 +304,7 @@ GameObject:
   - component: {fileID: 5385657251692696795}
   - component: {fileID: 1723154360971419502}
   - component: {fileID: 6760671442645921078}
+  - component: {fileID: 1513298731483937568}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
@@ -593,6 +594,19 @@ MonoBehaviour:
   healAmount: 100
   debuffRes: 0
   addChance: 0
+--- !u!114 &1513298731483937568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6456067556758367340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6875836f4cef4844b79968a62c1b778, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healObj: {fileID: 6772434245627094253, guid: e31d94aeb694111409c0a80517df7bdf, type: 3}
 --- !u!1 &6732813717209487805
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,7 +27,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void HealthChange(float amount)
     {
-        print(amount);
+
         if (combat.iFrame == true)
         {
             return;
@@ -59,14 +59,7 @@ public class PlayerHealth : MonoBehaviour
             }
         }
 
-        healthText.text = "HP: " + health + " / " + attr.maxHealth;
-        if (health <= 0)
-        {
-            healthText.text = "Awokwkwk Mokad" + "(HP: " + health + " / " + attr.maxHealth + ")";
-            healthText.color = Color.red;
-            gameObject.SetActive(false);
-            isDead = true;
-        }
+
 
 
     }
@@ -111,6 +104,19 @@ public class PlayerHealth : MonoBehaviour
         else
         {
             healthText.color = Color.white;
+        }
+
+        healthText.text = "HP: " + health + " / " + attr.maxHealth;
+        if(health > attr.maxHealth)
+        {
+            health = attr.maxHealth;
+        }
+        if (health <= 0)
+        {
+            healthText.text = "Awokwkwk Mokad" + "(HP: " + health.ToString("F2") + " / " + attr.maxHealth + ")";
+            healthText.color = Color.red;
+            gameObject.SetActive(false);
+            isDead = true;
         }
     }
 

@@ -8,21 +8,30 @@ public class WaveBuff : MonoBehaviour
     public TextMeshProUGUI buffText;
     public EnemyWave waveScr;
     public string buffName;
+    public string additionalText;
     public TextMeshProUGUI raritext;
     public string amountText;
     public float buffAmount;
     public string rarity;
     public PlayerAttribute attr;
-    public string[] attribute = { "maxhp", "atk", "atkspd", "spd", "critrate", "critdmg", "def" };
+    public string[] attribute = { "maxhp", "atk", "atkspd", "spd", "critrate", "critdmg", "def", "healdrop" };
     public string buffedAttribute;
+    public buffManager controller;
+    public string buffType;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //find player tag
         attr = GameObject.FindWithTag("Player").GetComponent<PlayerAttribute>();
-        buffedAttribute = attribute[Random.Range(0, attribute.Length)];
-        StartCoroutine(SetBuffAmount());
+        controller = GameObject.FindWithTag("GameController").GetComponent<buffManager>();
+
         waveScr = GameObject.FindWithTag("GameController").GetComponent<EnemyWave>();
+    }
+
+    void SetBuff()
+    {
+        buffType = attribute[Random.Range(0, attribute.Length)];
+        StartCoroutine(SetBuffAmount());
     }
 
     // Update is called once per frame
@@ -34,8 +43,9 @@ public class WaveBuff : MonoBehaviour
     public IEnumerator SetBuffAmount()
     {
 
-        if (buffedAttribute == "maxhp")
+        if (buffType == "maxhp")
         {
+            buffedAttribute = "maxhp";
             buffName = "Max Health";
             float r = Random.value;
             if (r < 0.75f)
@@ -57,8 +67,9 @@ public class WaveBuff : MonoBehaviour
                 amountText = "30";
             }
         }
-        else if (buffedAttribute == "atk")
+        else if (buffType == "atk")
         {
+            buffedAttribute = "atk";
             buffName = "Attack";
             float r = Random.value;
 
@@ -82,8 +93,9 @@ public class WaveBuff : MonoBehaviour
             }
 
         }
-        else if (buffedAttribute == "atkspd")
+        else if (buffType == "atkspd")
         {
+            buffedAttribute = "atkspd";
             buffName = "Attack Speed";
             float r = Random.value;
 
@@ -112,8 +124,9 @@ public class WaveBuff : MonoBehaviour
                 amountText = "10%";
             }
         }
-        else if (buffedAttribute == "critrate")
+        else if (buffType == "critrate")
         {
+            buffedAttribute = "critrate";
             buffName = "Critical Rate";
             float r = Random.value;
             if (r < 0.5f)
@@ -141,8 +154,9 @@ public class WaveBuff : MonoBehaviour
                 amountText = "20%";
             }
         }
-        else if (buffedAttribute == "critdmg")
+        else if (buffType == "critdmg")
         {
+            buffedAttribute = "critdmg";
             buffName = "Critical Damage";
             float r = Random.value;
             if (r < 0.5f)
@@ -170,8 +184,9 @@ public class WaveBuff : MonoBehaviour
                 amountText = "25%";
             }
         }
-        else if (buffedAttribute == "def")
+        else if (buffType == "def")
         {
+            buffedAttribute = "def";
             buffName = "Defense";
             float r = Random.value;
             if (r < 0.5f)
@@ -199,8 +214,9 @@ public class WaveBuff : MonoBehaviour
                 amountText = "20%";
             }
         }
-        else if (buffedAttribute == "spd")
+        else if (buffType == "spd")
         {
+            buffedAttribute = "spd";
             buffName = "Speed";
             float r = Random.value;
             if (r < 0.5f)
@@ -229,23 +245,62 @@ public class WaveBuff : MonoBehaviour
                 amountText = "20%";
             }
         }
+        else if (buffType == "healdrop")
+        {
+            buffName = "the chance to drop Healing Object";
+            additionalText = "(capped at 55% chance)";
+            if (waveScr.healDropChance == 55f)
+            {
+                SetBuff();
+            }
+            else
+            {
+                float r = Random.value;
+                if (r < 0.8f)
+                {
+                    buffAmount = 5f;
+                    rarity = "Common";
+                    amountText = "5%";
+                }
+                else
+                {
+                    buffAmount = 10f;
+                    rarity = "Uncommon";
+                    amountText = "10%";
+                }
+            }
+
+
+        }
         yield return new WaitForSeconds(0.1f);
         SetText();
     }
 
     void SetText()
     {
-        buffText.text = "Increase " + buffName + " by " + amountText;
+        if (additionalText != null)
+        {
+            buffText.text = "Increase " + buffName + " by " + amountText + "\n" + additionalText;
+        }
+        else
+        {
+            buffText.text = "Increase " + buffName + " by " + amountText;
+        }
         raritext.text = rarity;
-        if(rarity == "Common")
+        if (rarity == "Common")
         {
             raritext.color = Color.green;
-        } else if (rarity == "Uncommon")
+        }
+        else if (rarity == "Uncommon")
         {
             raritext.color = Color.yellow;
-        } else if (rarity == "Rare"){
+        }
+        else if (rarity == "Rare")
+        {
             raritext.color = Color.cyan;
-        } else {
+        }
+        else
+        {
             raritext.color = Color.magenta;
         }
     }
@@ -254,15 +309,27 @@ public class WaveBuff : MonoBehaviour
     {
         Debug.Log("Test");
         SceneManager.UnloadSceneAsync("WaveBuff");
-        attr.IncreaseAttr(buffedAttribute, buffAmount);
-        if(waveScr.wave ==3)
+        if (buffType == "maxhp" || buffType == "atk" || buffType == "atkspd" || buffType == "critrate" || buffType == "critdmg" || buffType == "def" || buffType == "spd")
         {
-            waveScr.StartCoroutine(waveScr.StartRound());
-        } else
+            attr.IncreaseAttr(buffedAttribute, buffAmount);
+        }
+        else if (buffType == "healdrop")
+        {
+            waveScr.healDropChance += buffAmount;
+            if (waveScr.healDropChance > 55f)
+            {
+                waveScr.healDropChance = 55f;
+            }
+        }
+        if (waveScr.wave == 3)
+        {
+            waveScr.StartCoroutine(waveScr.EndRound());
+        }
+        else
         {
             waveScr.StartCoroutine(waveScr.StartWave());
         }
     }
-    
+
 
 }

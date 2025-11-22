@@ -59,10 +59,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetButton("Dash"))
         {
-            Debug.Log("aa" + 10 * (1 + 1.5));
-            Debug.Log("bb" + 10 * (1 + 150f / 100f));
-            Debug.Log("cc" + 10 * (150f / 100f));
-            Debug.Log("dd" + 10 * 1.5f);
+            // Debug.Log("aa" + 10 * (1 + 1.5));
+            // Debug.Log("bb" + 10 * (1 + 150f / 100f));
+            // Debug.Log("cc" + 10 * (150f / 100f));
+            // Debug.Log("dd" + 10 * 1.5f);
             StartCoroutine(Dodge());
         }
     }

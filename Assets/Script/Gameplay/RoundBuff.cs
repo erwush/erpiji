@@ -5,22 +5,27 @@ using UnityEngine.SceneManagement;
 
 public class RoundBuff : MonoBehaviour
 {
-    public TextMeshProUGUI buffText;
+    public TextMeshProUGUI blessingText;
     public EnemyWave waveScr;
-    public string buffName;
+    public string blessingName;
+    public string descText;
+    public TextMeshProUGUI blessingDesc;
     public string amountText;
     public float buffAmount;
     public PlayerAttribute attr;
-    public string[] attribute = { "maxhp", "atk", "atkspd", "spd", "critrate", "critdmg", "def" };
-    public string buffedAttribute;
+    public string[] blessing = { "Lifesteal", "CritHit", "Burn" };
+    public WeaponTest3 weapon;
+
+    public string buffedBlessing;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //find player tag
         attr = GameObject.FindWithTag("Player").GetComponent<PlayerAttribute>();
-        buffedAttribute = attribute[Random.Range(0, attribute.Length)];
-        StartCoroutine(SetBuffAmount());
+        weapon = GameObject.FindWithTag("Player").GetComponent<WeaponTest3>();
         waveScr = GameObject.FindWithTag("GameController").GetComponent<EnemyWave>();
+        buffedBlessing = blessing[Random.Range(0, blessing.Length)];
+        StartCoroutine(SetBlessing());
     }
 
     // Update is called once per frame
@@ -29,176 +34,22 @@ public class RoundBuff : MonoBehaviour
 
     }
 
-    public IEnumerator SetBuffAmount()
+    public IEnumerator SetBlessing()
     {
-
-        if (buffedAttribute == "maxhp")
+        if (buffedBlessing == "Lifesteal")
         {
-            buffName = "Max Health";
-            float r = Random.value;
-            if (r < 0.75f)
-            {
-                buffAmount = 10f;
-                amountText = "10";
-            }
-            else if (r < 0.95f)
-            {
-                buffAmount = 20f;
-                amountText = "20";
-            }
-            else
-            {
-                buffAmount = 30f;
-                amountText = "30";
-            }
+            blessingName = "Lifesteal";
+            descText = "Gain " + amountText + " Lifesteal";
         }
-        else if (buffedAttribute == "atk")
+        else if (buffedBlessing == "CritHit")
         {
-            buffName = "Attack";
-            float r = Random.value;
-
-            if (r < 0.75f)
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-            else if (r < 0.90f)
-            {
-                buffAmount = 15f;
-                amountText = "15%";
-            }
-            else
-            {
-                buffAmount = 20f;
-                amountText = "20%";
-            }
-
+            blessingName = "CritHit";
+            descText = "Gain " + amountText + " CritHit";
         }
-        else if (buffedAttribute == "atkspd")
+        else if (buffedBlessing == "Burn")
         {
-            buffName = "Attack Speed";
-            float r = Random.value;
-
-            if (r < 0.5f)
-            {
-                buffAmount = 3f;
-                amountText = "3%";
-            }
-            else if (r < 0.75f)
-            {
-                buffAmount = 5f;
-                amountText = "5%";
-            }
-            else if (r < 0.9f)
-            {
-                buffAmount = 7f;
-                amountText = "7%";
-            }
-            else
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-        }
-        else if (buffedAttribute == "critrate")
-        {
-            buffName = "Critical Rate";
-            float r = Random.value;
-            if (r < 0.5f)
-            {
-                buffAmount = 5f;
-                amountText = "5%";
-            }
-            else if (r < 0.75f)
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-            else if (r < 0.9f)
-            {
-                buffAmount = 15f;
-                amountText = "15%";
-            }
-            else
-            {
-                buffAmount = 20f;
-                amountText = "20%";
-            }
-        }
-        else if (buffedAttribute == "critdmg")
-        {
-            buffName = "Critical Damage";
-            float r = Random.value;
-            if (r < 0.5f)
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-            else if (r < 0.75f)
-            {
-                buffAmount = 15f;
-                amountText = "15%";
-            }
-            else if (r < 0.9f)
-            {
-                buffAmount = 20f;
-                amountText = "20%";
-            }
-            else
-            {
-                buffAmount = 25f;
-                amountText = "25%";
-            }
-        }
-        else if (buffedAttribute == "def")
-        {
-            buffName = "Defense";
-            float r = Random.value;
-            if (r < 0.5f)
-            {
-                buffAmount = 5f;
-                amountText = "5%";
-            }
-            else if (r < 0.75f)
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-            else if (r < 0.9f)
-            {
-                buffAmount = 15f;
-                amountText = "15%";
-            }
-            else
-            {
-                buffAmount = 20f;
-                amountText = "20%";
-            }
-        }
-        else if (buffedAttribute == "spd")
-        {
-            buffName = "Speed";
-            float r = Random.value;
-            if (r < 0.5f)
-            {
-                buffAmount = 5f;
-                amountText = "5%";
-            }
-            else if (r < 0.75f)
-            {
-                buffAmount = 10f;
-                amountText = "10%";
-            }
-            else if (r < 0.9f)
-            {
-                buffAmount = 15f;
-                amountText = "15%";
-            }
-            else
-            {
-                buffAmount = 20f;
-                amountText = "20%";
-            }
+            blessingName = "Burn";
+            descText = "Gain " + amountText + " Burn";
         }
         yield return new WaitForSeconds(0.1f);
         SetText();
@@ -206,22 +57,30 @@ public class RoundBuff : MonoBehaviour
 
     void SetText()
     {
-        buffText.text = "Increase " + buffName + " by " + amountText;
+        blessingText.text = blessingName;
+        blessingDesc.text = descText;
     }
 
-    public void IncreaseAttribute()
+    public void GiveBlessing()
     {
-        SceneManager.UnloadSceneAsync("RoundBuff");
-        attr.IncreaseAttr(buffedAttribute, buffAmount);
-        waveScr.buffChoosing = false;
-        if(waveScr.wave ==3)
+        if (buffedBlessing == "Lifesteal")
         {
-            waveScr.StartCoroutine(waveScr.StartRound());
-        } else
-        {
-            waveScr.StartCoroutine(waveScr.StartWave());
+            weapon.bless = WeaponTest3.ActiveBlessing.Lifesteal;
         }
+        else if (buffedBlessing == "CritHit")
+        {
+            weapon.bless = WeaponTest3.ActiveBlessing.CritHit;
+        }
+        else if (buffedBlessing == "Burn")
+        {
+            weapon.bless = WeaponTest3.ActiveBlessing.Burn;
+        }
+        SceneManager.UnloadSceneAsync("RoundBuff");
+
+        waveScr.buffChoosing = false;
+
+        waveScr.StartCoroutine(waveScr.StartRound());
     }
-    
+
 
 }
