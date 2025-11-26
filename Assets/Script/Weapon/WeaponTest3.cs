@@ -10,6 +10,7 @@ public class WeaponTest3 : WeaponBase
     public float atkanim;
     public float atktimer;
     private SpriteRenderer sprite;
+    public BuffManager buffController;
     public PlayerCombat combat;
     public PlayerAttribute attr;
     public DamageBehaviour dmgBehaviour;
@@ -48,6 +49,7 @@ public class WeaponTest3 : WeaponBase
         atkanim = 0;
         cooldown = attr.atkSpd;
         healthScr = GetComponent<PlayerHealth>();
+        buffController = GameObject.FindWithTag("GameController").GetComponent<BuffManager>();
     }
 
     public override void Attack()
@@ -89,22 +91,9 @@ public class WeaponTest3 : WeaponBase
 
     public override void ApplyDamage()
     {
-        if (bless == ActiveBlessing.None)
-        {
+
             Base_ApplyDamage();
-        }
-        else if (bless == ActiveBlessing.Lifesteal)
-        {
-            Lifesteal_ApplyDamage();
-        }
-        else if (bless == ActiveBlessing.CritHit)
-        {
-            CritHit_ApplyDamage();
-        }
-        else if (bless == ActiveBlessing.Burn)
-        {
-            Burning_ApplyDamage();
-        }
+
     }
 
     public void Update()
@@ -186,7 +175,12 @@ public class WeaponTest3 : WeaponBase
             foreach (Collider2D enemy in enemies)
             {
                 EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
-                if (enemyAttr == null) continue;
+                if (enemyAttr == null)
+                {
+                    Debug.Log("enemy = null");
+                    continue;
+                }
+
 
                 float demeg = GameUtils.DamageApplier(
                     attr.atk,
@@ -200,9 +194,41 @@ public class WeaponTest3 : WeaponBase
                     typeIdx
                 );
 
-                enemy.GetComponent<EnemyHealth>()?.HealthChange(-demeg);
+                enemy.GetComponent<EnemyHealth>().HealthChange(-demeg);
 
-                Debug.Log("Damage ke " + enemy.name + ": " + demeg);
+                if (buffController.activeBless.Contains("Lifesteal"))
+                {
+                    StartCoroutine(GetHealth(demeg));
+                }
+
+                if (buffController.activeBless.Contains("Burn"))
+                {
+                    EnemyBurning burn = enemy.GetComponent<EnemyBurning>();
+                    if (burn == null)
+                    {
+                        burn = enemy.gameObject.AddComponent<EnemyBurning>();
+                        burn.burnDmg = Burning_burnDmg;
+                        burn.burnDelay = Burning_delay;
+                        burn.burnDuration = Burning_burnDuration;
+                        burn.isBurning = true;
+                    }
+                }
+
+                if (buffController.activeBless.Contains("CritHit"))
+                {
+                    if (CritHit_atkAmount < 3)
+                    {
+                        CritHit_atkAmount += 1;
+                    }
+                    else if (CritHit_atkAmount == 3)
+                    {
+                        if (CritHit_activeCor == null)
+                        {
+                            CritHit_activeCor = StartCoroutine(CritHit_IncreaseCrit());
+                        }
+                    }
+                    CritHit_isHit = true;
+                }
             }
 
 
@@ -218,37 +244,45 @@ public class WeaponTest3 : WeaponBase
 
     //*LIFESTEAL
     public float Lifesteal_healPercent;
-    public void Lifesteal_ApplyDamage()
-    {
-        // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
-        // float demeg = 0;
-        // if (hits.Length > 0)
-        // {
-        //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
-        //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-        //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-        // }
-        float demeg;
-        EnemyStat enemyAttr;
+    // public void Lifesteal_ApplyDamage()
+
+    // {
+
+    //     // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
+    //     // float demeg = 0;
+    //     // if (hits.Length > 0)
+    //     // {
+    //     //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
+    //     //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+    //     //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+    //     // }
 
 
-        typeIdx = (int)dmgBehaviour.dmgType;
-        elemIdx = (int)dmgBehaviour.dmgElement;
 
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
-        if (enemies.Length > 0)
-        {
-            foreach (Collider2D enemy in enemies)
-            {
-                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-                StartCoroutine(GetHealth(demeg));
-            }
+    //     typeIdx = (int)dmgBehaviour.dmgType;
+    //     elemIdx = (int)dmgBehaviour.dmgElement;
+
+    //     Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
+    //     if (enemies.Length > 0)
+    //     {
+
+    //         foreach (Collider2D enemy in enemies)
+    //         {
+
+    //             EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
+    //             if (enemyAttr == null)
+    //             {
+    //                 Debug.Log("enemy = null");
+    //                 continue;
+    //             }
+    //             float demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+    //             enemy.GetComponent<EnemyHealth>().HealthChange(-demeg);
+    //             StartCoroutine(GetHealth(demeg));
+    //         }
 
 
-        }
-    }
+    //     }
+    // }
 
     public IEnumerator GetHealth(float demeg)
     {
@@ -273,51 +307,55 @@ public class WeaponTest3 : WeaponBase
     public bool CritHit_isHit;
     public Coroutine CritHit_activeCor;
 
-    public void CritHit_ApplyDamage()
-    {
-        // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
-        // float demeg = 0;
-        // if (hits.Length > 0)
-        // {
-        //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
-        //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-        //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-        // }
-        float demeg;
-        EnemyStat enemyAttr;
+    // public void CritHit_ApplyDamage()
+    // {
+    //     // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
+    //     // float demeg = 0;
+    //     // if (hits.Length > 0)
+    //     // {
+    //     //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
+    //     //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+    //     //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+    //     // }
 
 
 
-        typeIdx = (int)dmgBehaviour.dmgType;
-        elemIdx = (int)dmgBehaviour.dmgElement;
 
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
-        if (enemies.Length > 0)
-        {
-            if (CritHit_atkAmount < 3)
-            {
-                CritHit_atkAmount += 1;
-            }
-            else if (CritHit_atkAmount == 3)
-            {
-                if (CritHit_activeCor == null)
-                {
-                    CritHit_activeCor = StartCoroutine(CritHit_IncreaseCrit());
-                }
-            }
-            CritHit_isHit = true;
-            foreach (Collider2D enemy in enemies)
-            {
-                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-                Debug.Log(demeg);
+    //     typeIdx = (int)dmgBehaviour.dmgType;
+    //     elemIdx = (int)dmgBehaviour.dmgElement;
 
-            }
+    //     Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
+    //     if (enemies.Length > 0)
+    //     {
+    //         if (CritHit_atkAmount < 3)
+    //         {
+    //             CritHit_atkAmount += 1;
+    //         }
+    //         else if (CritHit_atkAmount == 3)
+    //         {
+    //             if (CritHit_activeCor == null)
+    //             {
+    //                 CritHit_activeCor = StartCoroutine(CritHit_IncreaseCrit());
+    //             }
+    //         }
+    //         CritHit_isHit = true;
+    //         foreach (Collider2D enemy in enemies)
+    //         {
+    //             EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
+    //             if (enemyAttr == null)
+    //             {
+    //                 Debug.Log("enemy = null");
+    //                 continue;
+    //             }
+    //             float demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+    //             enemy.GetComponent<EnemyHealth>().HealthChange(-demeg);
+    //             Debug.Log(demeg);
+
+    //         }
 
 
-        }
-    }
+    //     }
+    // }
 
     public IEnumerator CritHit_IncreaseCrit()
     {
@@ -342,43 +380,47 @@ public class WeaponTest3 : WeaponBase
     public float Burning_burnDuration;
     public float Burning_delay;
 
-    public void Burning_ApplyDamage()
-    {
-        // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
-        // float demeg = 0;
-        // if (hits.Length > 0)
-        // {
-        //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
-        //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-        //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-        // }
-        float demeg;
-        EnemyStat enemyAttr;
+//     public void Burning_ApplyDamage()
+//     {
+//         // Collider2D[] hits = Physics2D.OverlapPointAll(atkPoint.position, eLayer);
+//         // float demeg = 0;
+//         // if (hits.Length > 0)
+//         // {
+//         //     enemyAttr = hits[0].gameObject.GetComponent<EnemyStat>();
+//         //     demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+//         //     hits[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
+//         // }
 
 
-        typeIdx = (int)dmgBehaviour.dmgType;
-        elemIdx = (int)dmgBehaviour.dmgElement;
+//         typeIdx = (int)dmgBehaviour.dmgType;
+//         elemIdx = (int)dmgBehaviour.dmgElement;
 
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
-        if (enemies.Length > 0)
-        {
-            foreach (Collider2D enemy in enemies)
-            {
-                EnemyBurning burn = enemy.GetComponent<EnemyBurning>();
-                if (burn == null)
-                {
-                    burn = enemy.gameObject.AddComponent<EnemyBurning>();
-                    burn.burnDmg = Burning_burnDmg;
-                    burn.burnDelay = Burning_delay;
-                    burn.burnDuration = Burning_burnDuration;
-                    burn.isBurning = true;
-                }
-                enemyAttr = enemies[0].gameObject.GetComponent<EnemyStat>();
-                demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
-                enemies[0].GetComponent<EnemyHealth>().HealthChange(-demeg);
-            }
+//         Collider2D[] enemies = Physics2D.OverlapCircleAll(atkPoint.position, attr.atkRange, eLayer);
+//         if (enemies.Length > 0)
+//         {
+//             foreach (Collider2D enemy in enemies)
+//             {
+//                 EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
+//                 if (enemyAttr == null)
+//                 {
+//                     Debug.Log("enemy = null");
+//                     continue;
+//                 }
+//                 EnemyBurning burn = enemy.GetComponent<EnemyBurning>();
+//                 if (burn == null)
+//                 {
+//                     burn = enemy.gameObject.AddComponent<EnemyBurning>();
+//                     burn.burnDmg = Burning_burnDmg;
+//                     burn.burnDelay = Burning_delay;
+//                     burn.burnDuration = Burning_burnDuration;
+//                     burn.isBurning = true;
+//                 }
+
+//                 float demeg = GameUtils.DamageApplier(attr.atk, enemyAttr.def, attr.dmgType[typeIdx], enemyAttr.dmgRes[typeIdx], attr.elemDmg[elemIdx], enemyAttr.elemRes[elemIdx], attr.critRate, attr.critDmg, typeIdx);
+//                 enemy.GetComponent<EnemyHealth>().HealthChange(-demeg);
+//             }
 
 
-        }
-    }
+//         }
+//     }
 }

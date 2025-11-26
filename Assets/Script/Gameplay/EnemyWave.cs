@@ -9,6 +9,7 @@ public class EnemyWave : MonoBehaviour
     public float wave;
     public LootHandler loot;
     public Vector3 enemySpawn;
+    public WaveTimer timer;
     public float round;
     public bool isSpawning;
     public GameObject[] enemies;
@@ -17,7 +18,7 @@ public class EnemyWave : MonoBehaviour
     public bool buffChoosing;
     public int totalEnemy;
     public PlayerHealth pleyerh;
-    public buffManager controller;
+    public BuffManager controller;
     public List<GameObject> activeEnemies = new List<GameObject>();
     public TextMeshProUGUI roundText;
     public float healDropChance;
@@ -26,7 +27,8 @@ public class EnemyWave : MonoBehaviour
     {
         StartCoroutine(StartRound());
         pleyerh = GameObject.FindWithTag("Player").GetComponent<PlayerHealth>();
-        controller =  GameObject.FindWithTag("GameController").GetComponent<buffManager>();
+        controller = GetComponent<BuffManager>();
+        timer = GetComponent<WaveTimer>(); 
 
     }
 
@@ -50,6 +52,8 @@ public class EnemyWave : MonoBehaviour
     }
     public IEnumerator EndWave()
     {
+        controller.buffList.Clear();
+        yield return new WaitForSeconds(0.1f);
         buffChoosing = true;
         pleyerh.HealthChange(pleyerh.attr.maxHealth * 0.15f);
         SceneManager.LoadSceneAsync("WaveBuff", LoadSceneMode.Additive);
@@ -61,6 +65,8 @@ public class EnemyWave : MonoBehaviour
 
     public IEnumerator EndRound()
     {
+        controller.buffList.Clear();
+        yield return new WaitForSeconds(0.1f);
         pleyerh.HealthChange(pleyerh.attr.maxHealth * 0.70f);
         SceneManager.LoadSceneAsync("RoundBuff", LoadSceneMode.Additive);
         yield return new WaitUntil(() => buffChoosing == false);
@@ -75,8 +81,14 @@ public class EnemyWave : MonoBehaviour
         enemyKind += 1;
         totalEnemy += 10;
         yield return new WaitForSeconds(0.1f);
-        StartCoroutine(StartWave());
+        StartTimer();
     }
+    
+    public void StartTimer()
+    {
+        timer.StartCoroutine(timer.Timer());
+    }
+
 
     public IEnumerator StartWave()
     {
@@ -103,9 +115,10 @@ public class EnemyWave : MonoBehaviour
     public void EnemyDied(GameObject enemy)
     {
         loot = enemy.GetComponent<LootHandler>();
-
-        if (Random.value < healDropChance)
+        float r = Random.value;
+        if (r <= (healDropChance/100f))
         {
+            Debug.Log(r);
             loot.DropLoot("Heal");
         }
         activeEnemies.Remove(enemy);

@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class WaveBuff : MonoBehaviour
@@ -16,22 +17,39 @@ public class WaveBuff : MonoBehaviour
     public PlayerAttribute attr;
     public string[] attribute = { "maxhp", "atk", "atkspd", "spd", "critrate", "critdmg", "def", "healdrop" };
     public string buffedAttribute;
-    public buffManager controller;
+    public BuffManager controller;
     public string buffType;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //find player tag
         attr = GameObject.FindWithTag("Player").GetComponent<PlayerAttribute>();
-        controller = GameObject.FindWithTag("GameController").GetComponent<buffManager>();
+        controller = GameObject.FindWithTag("GameController").GetComponent<BuffManager>();
+        attribute = new string[]
+        {
+        "maxhp", "atk", "atkspd", "spd",
+        "critrate", "critdmg", "def", "healdrop"
+        };
 
         waveScr = GameObject.FindWithTag("GameController").GetComponent<EnemyWave>();
+        SetBuff();
     }
 
     void SetBuff()
     {
         buffType = attribute[Random.Range(0, attribute.Length)];
-        StartCoroutine(SetBuffAmount());
+        Debug.Log("beforebuff" + buffType);
+        if (controller.buffList.Contains(buffType))
+        {
+            SetBuff();
+        }
+        else
+        {
+            controller.buffList.Add(buffType);
+            Debug.Log("buffnya: " + buffType);
+            StartCoroutine(SetBuffAmount());
+        }
+
     }
 
     // Update is called once per frame
@@ -249,6 +267,7 @@ public class WaveBuff : MonoBehaviour
         {
             buffName = "the chance to drop Healing Object";
             additionalText = "(capped at 55% chance)";
+
             if (waveScr.healDropChance == 55f)
             {
                 SetBuff();
@@ -307,7 +326,6 @@ public class WaveBuff : MonoBehaviour
 
     public void IncreaseAttribute()
     {
-        Debug.Log("Test");
         SceneManager.UnloadSceneAsync("WaveBuff");
         if (buffType == "maxhp" || buffType == "atk" || buffType == "atkspd" || buffType == "critrate" || buffType == "critdmg" || buffType == "def" || buffType == "spd")
         {
@@ -327,7 +345,7 @@ public class WaveBuff : MonoBehaviour
         }
         else
         {
-            waveScr.StartCoroutine(waveScr.StartWave());
+            waveScr.StartTimer();
         }
     }
 
