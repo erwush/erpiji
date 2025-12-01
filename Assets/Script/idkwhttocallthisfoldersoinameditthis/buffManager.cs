@@ -15,7 +15,6 @@ public class BuffManager : MonoBehaviour
     {
         buffList = new List<string>();
     }
-
     void Start()
     {
         buffList = new List<string>();
