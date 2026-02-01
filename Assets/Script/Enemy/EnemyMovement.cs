@@ -70,13 +70,13 @@ public class EnemyMovement : MonoBehaviour
         // }   
     }
 
-    void FixedUpdate()
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        anim.SetFloat("horizontal", Mathf.Abs(horizontal));
-        anim.SetFloat("vertical", Mathf.Abs(vertical));
-    }
+    // void FixedUpdate()
+    // {
+    //     float horizontal = Input.GetAxis("Horizontal");
+    //     float vertical = Input.GetAxis("Vertical");
+    //     anim.SetFloat("horizontal", Mathf.Abs(horizontal));
+    //     anim.SetFloat("vertical", Mathf.Abs(vertical));
+    // }
 
     private void Flip()
     {

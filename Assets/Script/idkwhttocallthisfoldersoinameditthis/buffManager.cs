@@ -4,9 +4,11 @@ using System.Collections.Generic;
 
 public class BuffManager : MonoBehaviour
 {
+    public string activeBuff;
     public List<string> buffList = new List<string>();
     public List<string> activeBless = new List<string>();
-    public List<string> enemyBuff = new List<string>(); 
+    public List<string> enemyBuff = new List<string>();
+    public List<string> offBuff = new List<string>();
 
     public EnemyWave wavescr;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -23,6 +25,5 @@ public class BuffManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
     }
 }

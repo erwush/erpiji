@@ -70,10 +70,15 @@ public class EnemyCombat : MonoBehaviour
             demeg = GameUtils.DamageApplier(stat.atk, plAttr.def, stat.dmgType[idx], plAttr.dmgRes[idx], stat.elemDmg[idx], plAttr.elemRes[idx], 0, 0, idx);
             hits[0].GetComponent<PlayerHealth>().HealthChange(-demeg);
             Debug.Log("demeg musuh:" + demeg);
-            if (buffController.enemyBuff.Contains("Knockback"))
-            {
-                hits[0].GetComponent<PlayerMovement>().Knockback(transform, stat.knockback);
-            }
+            // if (buffController.enemyBuff.Contains("Knockback"))
+            // {
+            //     hits[0].GetComponent<PlayerMovement>().Knockback(transform, stat.knockback);
+            // }
         }
+    }
+    
+    void OnDrawGizmosSelected()
+    {
+         Gizmos.DrawWireSphere(attackPoint.position, stat.atkRange);  
     }
 }

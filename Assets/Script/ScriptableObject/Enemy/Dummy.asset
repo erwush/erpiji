@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23f7dc8192957d94a96b8e19a3b9cfa5, type: 3}
   m_Name: Dummy
   m_EditorClassIdentifier: 
-  health: 10000
-  maxHealth: 10000
-  defaultHealth: 10000
+  health: 1000
+  maxHealth: 1000
+  defaultHealth: 1000
   def: 5
   atk: 45
   atkSpd: 10000

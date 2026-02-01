@@ -14,7 +14,7 @@ public class RoundBuff : MonoBehaviour
     public float buffAmount;
     public PlayerAttribute attr;
     public BuffManager controller;
-    public string[] blessing = { "Lifesteal", "CritHit", "Burn" };
+    public string[] blessing = { "Lifesteal", "CritHit", "Burn", "ChainLightning" };
     public WeaponTest3 weapon;
 
     public string buffedBlessing;
@@ -68,6 +68,11 @@ public class RoundBuff : MonoBehaviour
             blessingName = "Burn";
             descText = "Gain" + amountText + " Burn";
         }
+          else if (buffedBlessing == "ChainLightning")
+        {
+            blessingName = "ChainLightning";
+            descText = "Gain" + amountText + " Chain Lightning";
+        }
         yield return new WaitForSeconds(0.1f);
         SetText();
     }
@@ -90,18 +95,21 @@ public class RoundBuff : MonoBehaviour
 
     public void GiveBlessing()
     {
-        if (buffedBlessing == "Lifesteal")
-        {
-            weapon.bless = WeaponTest3.ActiveBlessing.Lifesteal;
-        }
-        else if (buffedBlessing == "CritHit")
-        {
-            weapon.bless = WeaponTest3.ActiveBlessing.CritHit;
-        }
-        else if (buffedBlessing == "Burn")
-        {
-            weapon.bless = WeaponTest3.ActiveBlessing.Burn;
-        }
+        // if (buffedBlessing == "Lifesteal")
+        // {
+        //     weapon.bless = WeaponTest3.ActiveBlessing.Lifesteal;
+        // }
+        // else if (buffedBlessing == "CritHit")
+        // {
+        //     weapon.bless = WeaponTest3.ActiveBlessing.CritHit;
+        // }
+        // else if (buffedBlessing == "Burn")
+        // {
+        //     weapon.bless = WeaponTest3.ActiveBlessing.Burn;
+        // } else if(buffedBlessing == "ChainLightning")
+        // {
+        //     weapon.bless = WeaponTest3.ActiveBlessing.ChainLightning;
+        // }
         controller.activeBless.Add(buffedBlessing);
         SceneManager.UnloadSceneAsync("RoundBuff");
 

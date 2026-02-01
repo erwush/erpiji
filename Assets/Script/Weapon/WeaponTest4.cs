@@ -1,9 +1,9 @@
-//*ALL FOR ONE WEAPON TEST
+//*CHAINSAW TEST
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponTest3 : WeaponBase
+public class WeaponTest4 : WeaponBase
 {
 
 
@@ -55,46 +55,47 @@ public class WeaponTest3 : WeaponBase
 
     public override void Attack()
     {
-        // if (Input.GetButton("Attack"))
-        // {
-        //     float chargeTime = Time.deltaTime;
-        //     if(chargeTime <= 0.8f)
-        //     {
-        //         isCharging = true;
-        //     }
-        //     else
-        //     {
-        //         isCharging = false;
-        //     }
-        // }
 
         if (atktimer <= 0)
         {
-            // StartCoroutine(AttackCoroutine());
-
-            //if (atkanim == 2)
-            //{
-            // anim.SetBool("isAttack1", true);
             atkanim = Random.Range(1, 3);
-
-
-            //}
-            //else if (atkanim == 2)
-            //{
-            //    anim.SetBool("isAttack2", true);
-            //    atkanim = Random.Range(1, 2);
-            //}
 
             atktimer = 1 / attr.atkSpd;
 
         }
     }
+    public bool isHolding;
 
     public override void ApplyDamage()
     {
+        if (!isHolding)
+            StartCoroutine(AttackHold());
 
-        Base_ApplyDamage();
 
+    }
+
+    public IEnumerator AttackHold()
+    {
+        isHolding = true;
+
+        // Freeze animasi di frame hit
+        anim.speed = 0f;
+        float interval = 1f / attr.atkSpd;
+
+        // interval damage (bisa dikaitkan ke attack speed)
+
+
+        while (Input.GetButton("Attack"))
+        {
+            Base_ApplyDamage();     // AOE / chain / burn dll
+
+            // TUNGGU → penting biar tidak spam per frame
+            yield return new WaitForSeconds(interval);
+        }
+
+        // Lepas tombol → lanjutkan animasi
+        anim.speed = 1f;
+        isHolding = false;
     }
 
     public void Update()
@@ -256,8 +257,8 @@ public class WeaponTest3 : WeaponBase
         for (int i = 0; i < maxChain; i++)
         {
             Debug.Log("chaini" + i);
-            if (lastTarget == null) break;
-            StartCoroutine(ChainDamage(lastTarget));
+                        if (lastTarget == null) break;
+            ChainDamage(lastTarget);
             hitTargets.Add(lastTarget);
             yield return new WaitForSeconds(0.1f); // d
 
@@ -296,13 +297,13 @@ public class WeaponTest3 : WeaponBase
         }
     }
 
-    public IEnumerator ChainDamage(Collider2D enemy)
+    public void ChainDamage(Collider2D enemy)
     {
         EnemyStat enemyAttr = enemy.GetComponent<EnemyStat>();
         if (enemyAttr == null)
         {
             Debug.Log("enemy = null");
-            yield break;
+            return;
         }
 
         float demeg = GameUtils.DamageApplier(
@@ -318,14 +319,9 @@ public class WeaponTest3 : WeaponBase
                );
 
         enemy.GetComponent<EnemyHealth>().HealthChange(-demeg);
-        //change sprite color
-        enemy.GetComponent<SpriteRenderer>().color = Color.cyan;
-        Debug.Log("chaindemeg" + demeg);
-        yield return new WaitForSeconds(0.1f);
-        enemy.GetComponent<SpriteRenderer>().color = Color.white;
+        Debug.Log("chaindemeg"+demeg);
 
     }
-    
 
     private void SpawnLightningEffect(Vector2 from, Vector2 to)
     {
@@ -333,6 +329,9 @@ public class WeaponTest3 : WeaponBase
         Debug.DrawLine(from, to, Color.cyan, 0.15f);
         Debug.Log("chainline");
     }
+
+
+
 
 
 
