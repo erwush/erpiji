@@ -7,11 +7,7 @@ public class PlayerAttribute : MonoBehaviour
 
 {
 
-
-
-
-
-
+    
     private Dictionary<string, System.Action<float>> setters;
 
     void Awake()

@@ -103,7 +103,7 @@ public class EnemyWave : MonoBehaviour
 
         for (int i = 0; i < totalEnemy; i++)
         {
-            enemySpawn = new Vector3(Random.Range(-10, 10), 0, Random.Range(-10, 10));
+            enemySpawn = new Vector3(Random.Range(-10, 10), Random.Range(-10, 10), 0);
             GameObject en = Instantiate(enemies[Random.Range(0, enemyKind)], enemySpawn, Quaternion.identity);
             yield return new WaitForSeconds(0.1f);
             activeEnemies.Add(en);

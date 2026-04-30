@@ -3,9 +3,11 @@ using System.Threading;
 using Unity.VisualScripting;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCombat : MonoBehaviour
 {
+    Slider healthBar;
     [Tooltip("A temporary state where the player can't be damaged")]
     public bool iFrame = false;
     public bool isSkill1 = false;
@@ -41,6 +43,7 @@ public class PlayerCombat : MonoBehaviour
         {
             weapon.Attack();
         }
+        
         
 
         if (atktimer > 0)

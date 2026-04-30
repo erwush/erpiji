@@ -47,14 +47,16 @@ public static class GameUtils
 
                 finalDmg = atk * (1f + critDmg / 100f) * (dmgType / 100f) * (elemDmg / 100f) * (1f - dmgRes / 100f) * (1f - elemRes / 100f) - (def * 0.1f);
             }
-        } else {
+        }
+        else
+        {
             if (typeIdx == 2)
             {
                 finalDmg = atk * (dmgType / 100f) * (elemDmg / 100f);
             }
             else
             {
-                finalDmg = atk * (dmgType / 100f) * (elemDmg / 100f) * (1-dmgRes/100f) * (1-elemRes/100f) - (def*0.1f);
+                finalDmg = atk * (dmgType / 100f) * (elemDmg / 100f) * (1 - dmgRes / 100f) * (1 - elemRes / 100f) - (def * 0.1f);
             }
         }
         if (finalDmg <= 0f)
